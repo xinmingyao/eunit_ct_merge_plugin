@@ -4,6 +4,7 @@
 
 merge_cover(_Config,_AppFile)->
 %    rebar_log:log(debug,"start merge ct and eunit cover html"),
+    {ok,Cwd}=file:get_cwd(),
     BaseDir=rebar_config:get_global(base_dir,undefiend),
     CtPath=filename:join([BaseDir,"logs","*/*/*/cover.html"]),
     EunitPath=filename:join([BaseDir,".eunit"]),
@@ -28,7 +29,8 @@ merge_cover(_Config,_AppFile)->
 			ok;
 		_->
 		    Merges=fold_src(SrcPath,Dir,EunitPath,MergePath),
-		    cover_analyse("cover",MergePath,Merges),
+		   
+		    cover_analyse(filename:basename(Cwd),MergePath,Merges),
 		    ok
 	    end
     end.
@@ -41,7 +43,7 @@ fold_src(Src,Ct,Eunit,Merge)->
 						FEunit=filename:join([Eunit,filename:basename(FileName,".erl")++".COVER.html"]),
 						FMerge=filename:join([Merge,filename:basename(FileName,".erl")++".COVER.html"]),
 						%io:format("~s ~n ~s ~n ~s ~n",[FCt,FEunit,FMerge]),
-						T=merge_file(FEunit,FCt,FMerge),
+						T=merge_file(FCt,FEunit,FMerge),
 						[{filename:basename(FileName,".erl"),filename:basename(FMerge),T}|Acc] end,[]).
 
 
@@ -132,11 +134,16 @@ cover_analyse(App,TestDir,Merges) ->
     
     {ok,CoverLog} = file:open(filename:join(TestDir, ?coverlog_name), [write]),
     write_coverlog_header(CoverLog),
-    io:fwrite(CoverLog, "<h1>Coverage for application '~w'</h1>\n", [App]),
-    io:fwrite(CoverLog,
-	      "<p><a href=\"~s\">Coverdata collected over all tests</a></p>",
-	      ["merge ct and eunit" ]),
-    io:fwrite(CoverLog,"<table>",[]),
+    io:fwrite(CoverLog, "<h1>Coverage for application '~s'</h1>\n", [App]),
+    %io:fwrite(CoverLog,
+    %	      "<p><a href=\"~s\">Coverdata collected over all tests</a></p>",
+    %	      ["merge ct and eunit" ]),
+    io:fwrite(CoverLog,"<table border=3 cellpadding=5>",[]),
+    io:fwrite(CoverLog,io_lib:fwrite("<th>Module</th>"
+		  "<th align=right>Covered(%)</th>"
+		  "<th align=right>Covered (Lines)</th>"
+		  "<th align=right>Not covered(Lines)</th>",
+		  []),[]),
     {Total,TCover}=lists:foldl(fun({Mod,File,{merge_info,Sum,Cover}},{All,C1})->
 			io:fwrite(CoverLog,format_analyse(Mod,File,Cover,Sum-Cover),[]),
 			{All+Sum,C1+Cover}
@@ -145,7 +152,7 @@ cover_analyse(App,TestDir,Merges) ->
     io:fwrite(CoverLog,io_lib:fwrite("<tr><td>Total</td>"
 		  "<td align=right>~w %</td>"
 		  "<td align=right>~w</td>"
-		  "<td align=right>~w</td></tr>\n",
+		  "<td align=right>~w</td></tr>",
 		  [pc(TCover,Total-TCover),TCover,Total-TCover]),[]),
     io:fwrite(CoverLog,"</table>",[]),
 
