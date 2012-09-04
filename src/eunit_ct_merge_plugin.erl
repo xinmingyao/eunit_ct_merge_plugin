@@ -111,11 +111,27 @@ merge_line2_test()->
     ok.
 
 merge_line3_test()->
+    A1=" 1..|    ?MODULE:now() + element(3, erlang:now()) / 1000000.</font>",
+    B1=" 0..|    ?MODULE:now() + element(3, erlang:now()) / 1000000.</font>",
+    C1=merge_line(A1,B1),
+    ?assertEqual(C1,{cover," 1..|    ?MODULE:now() + element(3, erlang:now()) / 1000000.</font>",1}),
+    ok.
+
+merge_line4_test()->
     A1="2..|?MODULE:now() + element(3, erlang:now()) / 1000000.</font>",
     B1="1..|?MODULE:now() + element(3, erlang:now()) / 1000000.</font>",
     C1=merge_line(A1,B1),
     ?assertEqual(C1,{cover,"3..|?MODULE:now() + element(3, erlang:now()) / 1000000.</font>",3}),
     ok.
+
+merge_line5_test()->
+    A1="     1..|      A1=&lt;font color=red&gt;     0..|    ?MODULE:now() + element(3, erlang:now()) / 1000000.&lt;/font&gt;,",
+    B1="<font color=red>     0..|      A1=\"&lt;font color=red&gt;     0..|    ?MODULE:now() + element(3, erlang:now()) / 1000000.&lt;/font&gt;\",</font>",
+    C1=merge_line(B1,A1),
+    ?assertEqual(C1,{cover,A1,1}),
+    ok.
+
+%
 
 merge_file_test()->
     F1=code:lib_dir(eunit_ct_merge_plugin,'test/eunit/e1.html'),
@@ -200,12 +216,12 @@ pc(Cov,NotCov) ->
     round(Cov/(Cov+NotCov)*100).
 
 merge_line(A,B)->
-    case re:run(A,".*([0-9])+\\.\\..*",[]) of
+    case re:run(A,"[^\\.]*([0-9])+\\.\\..*",[]) of
 	{match,[_,{S1,E1}]}->
 	    T=string:substr(A,S1+1,E1),
 	    C1=erlang:list_to_integer(T),
 	    %io:format("dddd ~p ~n ~p ~n ~p~n",[A,B,re:run(B,".*([0-9])+\\.\\..*",[])]),
-	    case re:run(B,".*([0-9])+\\.\\..*",[]) of
+	    case re:run(B,"[^\\.]*([0-9])+\\.\\..*",[]) of
 		{match,[_,{S2,E2}]}->
 		    T2=string:substr(B,S2+1,E2),
 		    C2=erlang:list_to_integer(T2),
@@ -224,10 +240,12 @@ merge_line(A,B)->
 				++string:substr(A,S1+E1+1,length(A)-E1),
 			    {cover,Tt,C3}
 		    end;
-		_ ->
+		_Tt ->
+		    %io:format("~p~n",[Tt]),
 		    {cover,A,C1}
 	    end;
-	_->
+	_Tt->
+	    
 	    A
     end
 .
