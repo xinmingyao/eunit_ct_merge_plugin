@@ -1,0 +1,14 @@
+
+a rebar plugin for merge eunit and common test cover result
+
+
+install:
+
+   add plugin in rebar.config
+ 
+   add  {cover_enabled,true} in rebar.config #for eunit cover
+   
+   add cover.spec in test folder #for common test cover result 
+   run rebar ct && rebar eunit && rebar merge_cover
+   
+   see the result in .merge folder 

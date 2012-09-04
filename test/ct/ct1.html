@@ -1,0 +1,17 @@
+<html>
+<head><title>.eunit/edis_util.COVER.html</title></head><body bgcolor=white text=black>
+<pre>
+File generated from /home/erlang/opensource/tiger_kv/.eunit/edis_util.erl by COVER 2012-08-31 at 17:43:18
+
+****************************************************************************
+        |  
+        |  -define(EPOCH, 62167219200).
+        |  
+        |  %% @doc Current timestamp
+        |  -spec timestamp() -&gt; float().
+        |  timestamp() -&gt;
+<font color=red>     0..|    ?MODULE:now() + element(3, erlang:now()) / 1000000.</font>
+4..|    ?MODULE:now() + element(1, erlang:now()) / 1000000.
+5..|    ?MODULE:now() + element(2, erlang:now()) / 1000000.
+6..|    ?MODULE:now() + element(3, erlang:now()) / 1000000.
+1..|    ?MODULE:now() + element(3, erlang:now()) / 1000000.
