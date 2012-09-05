@@ -10,10 +10,11 @@ merge_cover(_Config,_AppFile)->
     EunitPath=filename:join([BaseDir,".eunit"]),
     MergePath=filename:join([BaseDir,".merge"]),
     SrcPath=filename:join([BaseDir,"src"]),
+    io:format("~s~n",[BaseDir]),
     case filelib:wildcard(CtPath) of
 	[]->
 	    %rebar_log:log(warn,"not find commont test cover.html,maybe ct not runed")
-		ok;
+	    {error,"no common test result found,run ct first pleas!"};
 	Files->
 	    File=lists:last(Files),
 	    Dir=filename:dirname(File),
@@ -36,15 +37,15 @@ merge_cover(_Config,_AppFile)->
     end.
 
 
-fold_src(Src,Ct,Eunit,Merge)->
-    filelib:fold_files(Src,".erl",false,fun(FileName,Acc)->
-
-						FCt=filename:join([Ct,filename:basename(FileName,".erl")++".COVER.html"]),
-						FEunit=filename:join([Eunit,filename:basename(FileName,".erl")++".COVER.html"]),
-						FMerge=filename:join([Merge,filename:basename(FileName,".erl")++".COVER.html"]),
+fold_src(_Src,Ct,Eunit,Merge)->
+    filelib:fold_files(Ct,".COVER.html",false,
+		       fun(FileName,Acc)->
+			       FCt=filename:join([Ct,filename:basename(FileName)]),
+			       FEunit=filename:join([Eunit,filename:basename(FileName)]),
+			       FMerge=filename:join([Merge,filename:basename(FileName)]),
 						%io:format("~s ~n ~s ~n ~s ~n",[FCt,FEunit,FMerge]),
-						T=merge_file(FCt,FEunit,FMerge),
-						[{filename:basename(FileName,".erl"),filename:basename(FMerge),T}|Acc] end,[]).
+			       T=merge_file(FCt,FEunit,FMerge),
+			       [{filename:basename(FileName,".erl"),filename:basename(FMerge),T}|Acc] end,[]).
 
 
 
